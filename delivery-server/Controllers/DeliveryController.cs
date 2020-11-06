@@ -5,27 +5,40 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Deliveries.Models;
 using Deliveries.Data;
+using System.Web;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Deliveries.Controllers
 {
     [Route("api/delivery")]
     [ApiController]
-    public class DeliveryController : ControllerBase
+    public  class DeliveryController : ControllerBase
     {
         
         [HttpGet]
         public ActionResult<string> GetDeliveries()
+
         {
-            string jsonString;
-            jsonString = JsonSerializer.Serialize(DeliveryData.deliveries);
-            return jsonString;
+            
+         try
+         {
+        string json = JsonSerializer.Serialize(DeliveryData.deliveries);
+        return json;
+             
+         }
+         catch (System.Exception)
+         {
+             return "";
+             
+         }   
+
         }
 
         
 
         [HttpPost]
-        public IActionResult Post([FromForm] string senderfname,
+        public  IActionResult Post([FromForm] string senderfname,
                                    [FromForm] string sendersname,
                                    [FromForm] string senderemail,
                                    [FromForm] string senderphone,

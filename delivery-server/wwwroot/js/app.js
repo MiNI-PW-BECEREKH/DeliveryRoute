@@ -102,10 +102,13 @@ function showSchedule(sender, receiver, data) {
                 return;
 
             putOnSenderForm(result);
+
         })
 
         map.removeLayer(previewLine);
         showPreviewLine();
+
+        GetDeliveries();
     }
 
     function updatePreviewLineOnDrag() {
@@ -124,6 +127,8 @@ function showSchedule(sender, receiver, data) {
 
         map.removeLayer(previewLine);
         showPreviewLine();
+
+        GetDeliveries();
     }
 
 
@@ -134,6 +139,7 @@ function showSchedule(sender, receiver, data) {
         document.getElementById('sender-state').value = result.address.Region;
         document.getElementById('sender-building').value = result.address.AddNum;
         document.getElementById('sender-country').value = result.address.CountryCode;
+        GetDeliveries();
     }
 
     function putOnReceiverForm(result) {
@@ -143,10 +149,12 @@ function showSchedule(sender, receiver, data) {
         document.getElementById('receiver-state').value = result.address.Region;
         document.getElementById('receiver-building').value = result.address.AddNum;
         document.getElementById('receiver-country').value = result.address.CountryCode;
+        //GetDeliveries();
     }
 
     window.onload = function() {
         document.getElementById('form').reset();
+        GetDeliveries();
     }
 
     function showPreviewLine() {
@@ -164,6 +172,8 @@ function showSchedule(sender, receiver, data) {
 
         sender = null;
         previewLine = null
+
+
     }
 
 
@@ -174,10 +184,47 @@ function showSchedule(sender, receiver, data) {
         receiver = null;
         previewLine = null;
 
+
+
+    }
+
+    function GetDeliveries() {
         $(function update() {
             $.getJSON("/api/delivery", function(result) {
                 //do geocoding here
-                schedules = result;
+                //get form result 
+                //draw on map
+                result.forEach(element => {
+                    let sq = "";
+                    let rq = "";
+                    Object.keys(element.sender.address).forEach(function(key) {
+                        sq += element.sender.address[key] + " ";
+                    })
+
+                    Object.keys(element.receiver.address).forEach(function(key) {
+                        rq += element.receiver.address[key] + " ";
+                    })
+                    geocodeService.geocode().text(sq).run(function(err, results) {
+                        if (err)
+                            return;
+                        console.log(sq);
+                        var s = L.marker(results.latlng);
+                        console.log(results.latlng);
+                        s.addTo(map); //add pop up with details
+                    })
+                    geocodeService.geocode().text(rq).run(function(err, results) {
+                        if (err)
+                            return;
+                        console.log(rq);
+
+                        var r = L.marker(results.latlng);
+                        r.addTo(map); //add pop up with details
+                    })
+
+                });
+
+
+
 
             });
 
@@ -187,15 +234,16 @@ function showSchedule(sender, receiver, data) {
 
 
     //get form change
-    // document.getElementById('form').addEventListener('change', () => {
-    //     const addresses = {}
-    //     var formData = new FormData(document.querySelector('form'))
-    //     formData.forEach(function(value, key) {
+    document.getElementById('form').addEventListener('change', () => {
+        const addresses = {}
+        var formData = new FormData(document.querySelector('form'))
+        formData.forEach(function(value, key) {
 
-    //         addresses[key] = value;
-    //     });
-    //     updateMarker(addresses);
-    // })
+            addresses[key] = value;
+        });
+        updateMarker(addresses);
+        GetDeliveries();
+    })
 
 
 
@@ -214,6 +262,7 @@ function showSchedule(sender, receiver, data) {
         deleteSender();
         deleteReceiver();
         //drawSchedules();
+        //GetDeliveries();
 
         console.log(schedules);
 
