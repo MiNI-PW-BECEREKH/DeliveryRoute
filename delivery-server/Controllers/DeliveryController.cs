@@ -17,21 +17,22 @@ namespace Deliveries.Controllers
     {
         
         [HttpGet]
-        public ActionResult<string> GetDeliveries()
+        public ActionResult<List<Delivery>> GetDeliveries()
 
         {
             
-         try
-         {
-        string json = JsonSerializer.Serialize(DeliveryData.deliveries);
-        return json;
+        //  try
+        //  {
+        // string json = JsonSerializer.Serialize(DeliveryData.deliveries);
+        // return json;
              
-         }
-         catch (System.Exception)
-         {
-             return "";
+        //  }
+        //  catch (System.Exception)
+        //  {
+        //      return "";
              
-         }   
+        //  }   
+         return Ok(DeliveryData.deliveries);
 
         }
 

@@ -234,16 +234,16 @@ function showSchedule(sender, receiver, data) {
 
 
     //get form change
-    document.getElementById('form').addEventListener('change', () => {
-        const addresses = {}
-        var formData = new FormData(document.querySelector('form'))
-        formData.forEach(function(value, key) {
+    // document.getElementById('form').addEventListener('change', () => {
+    //     const addresses = {}
+    //     var formData = new FormData(document.querySelector('form'))
+    //     formData.forEach(function(value, key) {
 
-            addresses[key] = value;
-        });
-        updateMarker(addresses);
-        GetDeliveries();
-    })
+    //         addresses[key] = value;
+    //     });
+    //     updateMarker(addresses);
+    //     GetDeliveries();
+    // })
 
 
 
