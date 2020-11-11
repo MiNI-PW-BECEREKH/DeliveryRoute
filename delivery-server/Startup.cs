@@ -39,6 +39,8 @@ namespace delivery_server
                 "https://httpstatuses.com/404";
             });
 
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -50,8 +52,14 @@ namespace delivery_server
             }
 
             app.UseDefaultFiles();
-            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions{
+                OnPrepareResponse = context =>
+                {
+                    context.Context.Response.Headers["Cache-Control"]="No-Cache";
+                }
+            });
             app.UseHttpsRedirection();
+
 
 
 

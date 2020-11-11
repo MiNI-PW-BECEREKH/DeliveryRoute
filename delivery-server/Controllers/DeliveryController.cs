@@ -13,6 +13,7 @@ namespace Deliveries.Controllers
 {
     [Route("api/delivery")]
     [ApiController]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class DeliveryController : ControllerBase
     {
 

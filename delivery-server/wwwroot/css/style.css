@@ -23,7 +23,12 @@ body>div {
     width: 100%;
 }
 
-
+.coordinate
+{
+    position: absolute;
+    right: -2000px;
+    
+}
 
 .container {
     margin: 0 auto;

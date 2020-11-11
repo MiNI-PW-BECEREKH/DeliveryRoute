@@ -143,7 +143,7 @@ $(document).ready(function () {
             document.getElementById('sender-state').value = result.address.Region;
             document.getElementById('sender-building').value = result.address.AddNum;
             document.getElementById('sender-country').value = result.address.CountryCode;
-            document.getElementById('sender-coordinate').value = result.latlng;
+            document.getElementById('sender-coordinate').value = result.latlng.lat + "," + result.latlng.lng; 
             console.log(result);
             //GetDeliveries();
         }
@@ -155,6 +155,7 @@ $(document).ready(function () {
             document.getElementById('receiver-state').value = result.address.Region;
             document.getElementById('receiver-building').value = result.address.AddNum;
             document.getElementById('receiver-country').value = result.address.CountryCode;
+            document.getElementById('receiver-coordinate').value = result.latlng.lat + "," + result.latlng.lng; 
             //GetDeliveries();
         }
 
@@ -201,31 +202,33 @@ $(document).ready(function () {
                     //get form result 
                     //draw on map
                     result.forEach(element => {
-                        let sq = "";
-                        let rq = "";
-                        Object.keys(element.sender.address).forEach(function (key) {
-                            sq += element.sender.address[key] + " ";
-                        })
+                        // let sq = "";
+                        // let rq = "";
+                        // Object.keys(element.sender.address).forEach(function (key) {
+                        //     sq += element.sender.address[key] + " ";
+                        // })
 
-                        Object.keys(element.receiver.address).forEach(function (key) {
-                            rq += element.receiver.address[key] + " ";
-                        })
-                        geocodeService.geocode().text(sq).run(function (err, results) {
-                            if (err)
-                                return;
-                            console.log(sq);
-                            var s = L.marker(results.latlng);
-                            console.log(results.latlng);
-                            s.addTo(map); //add pop up with details
-                        })
-                        geocodeService.geocode().text(rq).run(function (err, results) {
-                            if (err)
-                                return;
-                            console.log(rq);
+                        // Object.keys(element.receiver.address).forEach(function (key) {
+                        //     rq += element.receiver.address[key] + " ";
+                        // })
+                        // geocodeService.geocode().text(sq).run(function (err, results) {
+                        //     if (err)
+                        //         return;
+                        //     console.log(sq);
+                        //     var s = L.marker(results.latlng);
+                        //     console.log(results.latlng);
+                        //     s.addTo(map); //add pop up with details
+                        // })
+                        // geocodeService.geocode().text(rq).run(function (err, results) {
+                        //     if (err)
+                        //         return;
+                        //     console.log(rq);
 
-                            var r = L.marker(results.latlng);
-                            r.addTo(map); //add pop up with details
-                        })
+                        //     var r = L.marker(results.latlng);
+                        //     r.addTo(map); //add pop up with details
+                        // })
+                        let s = L.marker(element.sendercoordinate);
+                        s.addTo(map);
 
                     });
 
