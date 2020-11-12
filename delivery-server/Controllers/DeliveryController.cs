@@ -17,11 +17,10 @@ namespace Deliveries.Controllers
     public class DeliveryController : ControllerBase
     {
 
-        //private static object locker = new object();
+        private static object locker = new object();
         private static int GeneratedID = 0;
         [HttpGet]
-        public ActionResult<List<Delivery>> GetDeliveries()
-
+        public  ActionResult<List<Delivery>> GetDeliveries()
         {
 
             //  try
@@ -34,15 +33,18 @@ namespace Deliveries.Controllers
             //  {
             //      return "";
 
-            //  }   
-            return Ok(DeliveryData.deliveries);
+            //  }
+            
+            return  Ok(DeliveryData.deliveries);
+
+            
 
         }
 
 
 
         [HttpPost]
-        public IActionResult Post([FromForm] string senderfname,
+        public IActionResult Post(  [FromForm] string senderfname,
                                     [FromForm] string sendersname,
                                     [FromForm] string senderemail,
                                     [FromForm] string senderphone,
@@ -71,7 +73,9 @@ namespace Deliveries.Controllers
                                     [FromForm] int weight,
                                     [FromForm] string comments,
                                     [FromForm] DateTime pickupdate,
-                                    [FromForm] DateTime pickuptime)
+                                    [FromForm] DateTime pickuptime,
+                                    [FromForm] string sendercoordinate,
+                                    [FromForm] string receivercoordinate)
         {
 
 
@@ -79,7 +83,7 @@ namespace Deliveries.Controllers
             Delivery d = new Delivery
             {
                 ID = GeneratedID++,
-                sender = new Person { name = senderfname, surname = sendersname, email = senderemail, phonenumber = senderphone, address = new Address { Street = senderstreet, Building = senderbuilding, Local = senderlocal, City = sendercity, State = senderstate, Country = sendercountry, ZipCode = senderzip } },
+                sender = new Person { name = senderfname, surname = sendersname, email = senderemail, phonenumber = senderphone, address = new Address { Street = senderstreet, Building = senderbuilding, Local = senderlocal, City = sendercity, State = senderstate, Country = sendercountry, ZipCode = senderzip, Coordinate = sendercoordinate } },
 
                 receiver = new Person
                 {
@@ -87,7 +91,7 @@ namespace Deliveries.Controllers
                     surname = receiversname,
                     email = receiveremail,
                     phonenumber = receiverphone,
-                    address = new Address { Street = receiverstreet, Building = receiverbuilding, Local = receiverlocal, City = receivercity, State = receiverstate, Country = receivercountry, ZipCode = receiverzip }
+                    address = new Address { Street = receiverstreet, Building = receiverbuilding, Local = receiverlocal, City = receivercity, State = receiverstate, Country = receivercountry, ZipCode = receiverzip, Coordinate = receivercoordinate }
                 },
 
                 package = new Package
@@ -107,9 +111,6 @@ namespace Deliveries.Controllers
             {
                 DeliveryData.deliveries.Add(d);
             }
-
-
-
             return NoContent();
 
         }

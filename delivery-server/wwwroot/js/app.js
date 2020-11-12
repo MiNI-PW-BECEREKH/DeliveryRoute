@@ -22,7 +22,7 @@ $(document).ready(function () {
     });
 
     //a container that holds our sender receiver data pairs
-    var schedules = [];
+    //var schedules = [];
 
     function saveSchedule(sender, receiver, data) {
         //adds objects to schedules
@@ -196,7 +196,7 @@ $(document).ready(function () {
         }
 
         function GetDeliveries() {
-            $(function update() {
+            $(() => {
                 $.getJSON("/api/delivery", function (result) {
                     //do geocoding here
                     //get form result 
@@ -227,8 +227,13 @@ $(document).ready(function () {
                         //     var r = L.marker(results.latlng);
                         //     r.addTo(map); //add pop up with details
                         // })
-                        let s = L.marker(element.sendercoordinate);
-                        s.addTo(map);
+                        console.log(element);
+                        let cs = element.sender.address.coordinate.split(",");
+                        let s = L.marker([parseFloat(cs[0]),parseFloat(cs[1])]).addTo(map);
+                        
+
+                        let cr = element.receiver.address.coordinate.split(",");
+                        let r = L.marker([parseFloat(cr[0]),parseFloat(cr[1])]).addTo(map);
 
                     });
 
@@ -257,8 +262,9 @@ $(document).ready(function () {
 
 
 
-
+        
         document.getElementById('form').addEventListener('submit', (e) => {
+            e.preventDefault();
             const data = {};
             const formData = new FormData(document.getElementById('form'));
             formData.forEach(function (value, key) {
@@ -267,16 +273,27 @@ $(document).ready(function () {
 
             //saveSchedule(sender.getLatLng(), receiver.getLatLng(), data);
 
+            
+            $.ajax({
+                url: '/api/delivery',
+                type: 'post',
+                data: $('#form').serialize(),
+                success: function(){
+                    console.log("from posted")
+                }
+            });
+        
 
             deleteSender();
             deleteReceiver();
             //drawSchedules();
             GetDeliveries();
 
-            console.log(schedules);
+            
+
+            //console.log(schedules);
 
 
-            //e.preventDefault();
             //return false;
         });
 
