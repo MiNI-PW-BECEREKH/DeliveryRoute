@@ -198,9 +198,6 @@ $(document).ready(function () {
         function GetDeliveries() {
             $(() => {
                 $.getJSON("/api/delivery", function (result) {
-                    //do geocoding here
-                    //get form result 
-                    //draw on map
                     result.forEach(element => {
                         // let sq = "";
                         // let rq = "";
@@ -227,13 +224,21 @@ $(document).ready(function () {
                         //     var r = L.marker(results.latlng);
                         //     r.addTo(map); //add pop up with details
                         // })
-                        console.log(element);
+                        console.log(element.sender);
                         let cs = element.sender.address.coordinate.split(",");
-                        let s = L.marker([parseFloat(cs[0]),parseFloat(cs[1])]).addTo(map);
+                        let s = L.marker([parseFloat(cs[0]),parseFloat(cs[1])]).bindPopup("Sender:" + element.sender.name + " " + element.sender.surname + "," + element.sender.phonenumber + "," + element.sender.email ).openPopup();
+                        s.addTo(map);
                         
 
                         let cr = element.receiver.address.coordinate.split(",");
-                        let r = L.marker([parseFloat(cr[0]),parseFloat(cr[1])]).addTo(map);
+                        let r = L.marker([parseFloat(cr[0]),parseFloat(cr[1])]).bindPopup("Receiver:" + element.receiver.name + " " + element.receiver.surname + "," + element.receiver.phonenumber + "," + element.receiver.email ).openPopup();
+                        r.addTo(map);
+
+
+                        const line = L.polyline([
+                            s.getLatLng(),
+                            r.getLatLng()
+                        ]).addTo(map);
 
                     });
 
@@ -273,13 +278,14 @@ $(document).ready(function () {
 
             //saveSchedule(sender.getLatLng(), receiver.getLatLng(), data);
 
+            GetDeliveries();
             
             $.ajax({
                 url: '/api/delivery',
                 type: 'post',
                 data: $('#form').serialize(),
                 success: function(){
-                    console.log("from posted")
+                    console.log("form posted")
                 }
             });
         
@@ -287,7 +293,6 @@ $(document).ready(function () {
             deleteSender();
             deleteReceiver();
             //drawSchedules();
-            GetDeliveries();
 
             
 

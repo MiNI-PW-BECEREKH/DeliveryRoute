@@ -8,6 +8,7 @@ using Deliveries.Data;
 using System.Web;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace Deliveries.Controllers
 {
@@ -17,10 +18,10 @@ namespace Deliveries.Controllers
     public class DeliveryController : ControllerBase
     {
 
-        private static object locker = new object();
+        private static readonly object locker = new object();
         private static int GeneratedID = 0;
         [HttpGet]
-        public  ActionResult<List<Delivery>> GetDeliveries()
+        public ActionResult<List<Delivery>> GetDeliveries()
         {
 
             //  try
@@ -34,11 +35,12 @@ namespace Deliveries.Controllers
             //      return "";
 
             //  }
-            
-            return  Ok(DeliveryData.deliveries);
 
-            
+            lock (locker)
+            {
+                return Ok(DeliveryData.deliveries);
 
+            }
         }
 
 
@@ -107,10 +109,12 @@ namespace Deliveries.Controllers
                 }
             };
 
-            lock (DeliveryData.deliveries)
+            lock (locker)
             {
                 DeliveryData.deliveries.Add(d);
+
             }
+
             return NoContent();
 
         }
