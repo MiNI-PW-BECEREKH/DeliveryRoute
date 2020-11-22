@@ -1,7 +1,7 @@
 $(document).ready(function () {
 
 
-
+    var markers = [];
     var map = L.map('idmap', {
 
     }).setView([52.237049, 21.017532], 10)
@@ -143,7 +143,7 @@ $(document).ready(function () {
             document.getElementById('sender-state').value = result.address.Region;
             document.getElementById('sender-building').value = result.address.AddNum;
             document.getElementById('sender-country').value = result.address.CountryCode;
-            document.getElementById('sender-coordinate').value = result.latlng.lat + "," + result.latlng.lng; 
+            document.getElementById('sender-coordinate').value = result.latlng.lat + "," + result.latlng.lng;
             console.log(result);
             //GetDeliveries();
         }
@@ -155,7 +155,7 @@ $(document).ready(function () {
             document.getElementById('receiver-state').value = result.address.Region;
             document.getElementById('receiver-building').value = result.address.AddNum;
             document.getElementById('receiver-country').value = result.address.CountryCode;
-            document.getElementById('receiver-coordinate').value = result.latlng.lat + "," + result.latlng.lng; 
+            document.getElementById('receiver-coordinate').value = result.latlng.lat + "," + result.latlng.lng;
             //GetDeliveries();
         }
 
@@ -195,59 +195,64 @@ $(document).ready(function () {
 
         }
 
-        function GetDeliveries() {
-            $(() => {
-                $.getJSON("/api/delivery", function (result) {
-                    result.forEach(element => {
-                        // let sq = "";
-                        // let rq = "";
-                        // Object.keys(element.sender.address).forEach(function (key) {
-                        //     sq += element.sender.address[key] + " ";
-                        // })
+        function downloadData() {
+            $.getJSON("/api/delivery", function (data) {
+                markers.forEach(element =>{
+                    map.removeLayer(element);
+                });
+            
+                displayData(data);
+            });
+        }
 
-                        // Object.keys(element.receiver.address).forEach(function (key) {
-                        //     rq += element.receiver.address[key] + " ";
-                        // })
-                        // geocodeService.geocode().text(sq).run(function (err, results) {
-                        //     if (err)
-                        //         return;
-                        //     console.log(sq);
-                        //     var s = L.marker(results.latlng);
-                        //     console.log(results.latlng);
-                        //     s.addTo(map); //add pop up with details
-                        // })
-                        // geocodeService.geocode().text(rq).run(function (err, results) {
-                        //     if (err)
-                        //         return;
-                        //     console.log(rq);
+        function displayData(data) {
+                data.forEach(element => {
+                    // let sq = "";
+                    // let rq = "";
+                    // Object.keys(element.sender.address).forEach(function (key) {
+                    //     sq += element.sender.address[key] + " ";
+                    // })
 
-                        //     var r = L.marker(results.latlng);
-                        //     r.addTo(map); //add pop up with details
-                        // })
-                        console.log(element.sender);
-                        let cs = element.sender.address.coordinate.split(",");
-                        let s = L.marker([parseFloat(cs[0]),parseFloat(cs[1])]).bindPopup("Sender:" + element.sender.name + " " + element.sender.surname + "," + element.sender.phonenumber + "," + element.sender.email ).openPopup();
-                        s.addTo(map);
-                        
+                    // Object.keys(element.receiver.address).forEach(function (key) {
+                    //     rq += element.receiver.address[key] + " ";
+                    // })
+                    // geocodeService.geocode().text(sq).run(function (err, results) {
+                    //     if (err)
+                    //         return;
+                    //     console.log(sq);
+                    //     var s = L.marker(results.latlng);
+                    //     console.log(results.latlng);
+                    //     s.addTo(map); //add pop up with details
+                    // })
+                    // geocodeService.geocode().text(rq).run(function (err, results) {
+                    //     if (err)
+                    //         return;
+                    //     console.log(rq);
 
-                        let cr = element.receiver.address.coordinate.split(",");
-                        let r = L.marker([parseFloat(cr[0]),parseFloat(cr[1])]).bindPopup("Receiver:" + element.receiver.name + " " + element.receiver.surname + "," + element.receiver.phonenumber + "," + element.receiver.email ).openPopup();
-                        r.addTo(map);
-
-
-                        const line = L.polyline([
-                            s.getLatLng(),
-                            r.getLatLng()
-                        ]).addTo(map);
-
-                    });
+                    //     var r = L.marker(results.latlng);
+                    //     r.addTo(map); //add pop up with details
+                    // })
+                    console.log(element.sender);
+                    let cs = element.sender.address.coordinate.split(",");
+                    let s = L.marker([parseFloat(cs[0]), parseFloat(cs[1])]).bindPopup("Sender:" + element.sender.name + " " + element.sender.surname + "," + element.sender.phonenumber + "," + element.sender.email).openPopup();
+                    s.addTo(map);
 
 
+                    let cr = element.receiver.address.coordinate.split(",");
+                    let r = L.marker([parseFloat(cr[0]), parseFloat(cr[1])]).bindPopup("Receiver:" + element.receiver.name + " " + element.receiver.surname + "," + element.receiver.phonenumber + "," + element.receiver.email).openPopup();
+                    r.addTo(map);
 
+
+                    const line = L.polyline([
+                        s.getLatLng(),
+                        r.getLatLng()
+                    ]).addTo(map);
+
+                    markers.push(s);
+                    markers.push(r);
+                    markers.push(line);
 
                 });
-
-            });
         }
 
 
@@ -267,7 +272,7 @@ $(document).ready(function () {
 
 
 
-        
+
         document.getElementById('form').addEventListener('submit', (e) => {
             e.preventDefault();
             const data = {};
@@ -278,23 +283,24 @@ $(document).ready(function () {
 
             //saveSchedule(sender.getLatLng(), receiver.getLatLng(), data);
 
-            GetDeliveries();
-            
+
+
             $.ajax({
                 url: '/api/delivery',
                 type: 'post',
                 data: $('#form').serialize(),
-                success: function(){
-                    console.log("form posted")
+                success: function () {
+                    console.log("form posted");
+                    downloadData();
                 }
             });
-        
+
 
             deleteSender();
             deleteReceiver();
             //drawSchedules();
 
-            
+
 
             //console.log(schedules);
 
