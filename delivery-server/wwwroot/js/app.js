@@ -62,6 +62,8 @@ $(document).ready(function () {
 
         //receiver marker on right click handler
         map.on('contextmenu', function (e) {
+            //for safety and no accidental edits
+            document.getElementById('deliveryid').value = "";
             geocodeService.reverse().latlng(e.latlng).run(function (error, result) {
                 if (error) {
                     return;
@@ -81,6 +83,8 @@ $(document).ready(function () {
 
         //sender marker on left click marker
         map.on('click', function onMapClick(e) {
+            //for safety and no accidental edits
+            document.getElementById('deliveryid').value = "";
             geocodeService.reverse().latlng(e.latlng).run(function (error, result) {
                 if (error) {
                     return;
@@ -109,8 +113,10 @@ $(document).ready(function () {
 
             })
 
-            map.removeLayer(previewLine);
-            showPreviewLine();
+            if (previewLine) {
+                map.removeLayer(previewLine);
+                showPreviewLine();
+            }
 
             //GetDeliveries();
         }
@@ -118,6 +124,7 @@ $(document).ready(function () {
         function updatePreviewLineOnDrag() {
             map.removeLayer(previewLine);
             showPreviewLine();
+            //we need to find changed preview line and change it is position with marker
         }
 
 
@@ -129,8 +136,10 @@ $(document).ready(function () {
                 putOnReceiverForm(result);
             })
 
-            map.removeLayer(previewLine);
-            showPreviewLine();
+            if (previewLine) {
+                map.removeLayer(previewLine);
+                showPreviewLine();
+            }
 
             //GetDeliveries();
         }
@@ -191,68 +200,153 @@ $(document).ready(function () {
             receiver = null;
             previewLine = null;
 
+        }
+
+        function removeDelivery(e, id, data) {
+            if (e.originalEvent.ctrlKey) {
+
+                $.ajax({
+                    url: '/api/delivery/' + id,
+                    type: 'delete',
+                    success: function () {
+                        console.log("form deleted");
+                        downloadData();
+                    }
+                });
+
+            }
+            else {
+                data.forEach(element => {
+                    if (element.id === id) {
+                        document.getElementById('deliveryid').value = element.id;
+                        putOnEditReceiver(element.receiver);
+                        putOnEditSender(element.sender);
+                        putOnEditParcel(element.package);
+                        //on button click check if id field exists
+                        //if so send edit request on server
+                    }
+                })
+            }
+        }
+
+        function putOnEditReceiver(receiver) {
+            console.log(receiver);
+            let address = receiver.address;
+            document.getElementById('receiver-street').value = address.street;
+            document.getElementById('receiver-city').value = address.city;
+            document.getElementById('receiver-zip').value = address.zipCode;
+            document.getElementById('receiver-state').value = address.state;
+            document.getElementById('receiver-building').value = address.building;
+            document.getElementById('receiver-country').value = address.country;
+            document.getElementById('receiver-coordinate').value = address.coordinate;
+            //then fill the info about receiver
+            document.getElementById('receiver-fname').value = receiver.name;
+            document.getElementById('receiver-sname').value = receiver.surname;
+            document.getElementById('receiver-phone').value = receiver.phonenumber;
+            document.getElementById('receiver-email').value = receiver.email;
+        }
 
 
+        function putOnEditSender(sender) {
+            console.log(sender);
+            let address = sender.address;
+            document.getElementById('sender-street').value = address.street;
+            document.getElementById('sender-city').value = address.city;
+            document.getElementById('sender-zip').value = address.zipCode;
+            document.getElementById('sender-state').value = address.state;
+            document.getElementById('sender-building').value = address.building;
+            document.getElementById('sender-country').value = address.country;
+            document.getElementById('sender-coordinate').value = address.coordinate;
+
+
+            document.getElementById('sender-fname').value = sender.name;
+            document.getElementById('sender-sname').value = sender.surname;
+            document.getElementById('sender-phone').value = sender.phonenumber;
+            document.getElementById('sender-email').value = sender.email;
+
+        }
+
+
+        function putOnEditParcel(parcel) {
+            console.log(parcel);
         }
 
         function downloadData() {
             $.getJSON("/api/delivery", function (data) {
-                markers.forEach(element =>{
+                markers.forEach(element => {
                     map.removeLayer(element);
                 });
-            
+
                 displayData(data);
             });
         }
 
+        let nline;
+        function serverUpdatePreviewLineOnDrag(e, cs, cr, l) {
+
+            markers.splice(markers.indexOf(l), 1);
+            map.removeLayer(l)
+            // window.map.removeLayer(line);
+            if (nline)
+                map.removeLayer(nline)
+            nline = L.polyline([
+                cs.getLatLng(),
+                cr.getLatLng()
+            ]).addTo(map);
+            markers.push(nline);
+
+
+
+        }
+
         function displayData(data) {
-                data.forEach(element => {
-                    // let sq = "";
-                    // let rq = "";
-                    // Object.keys(element.sender.address).forEach(function (key) {
-                    //     sq += element.sender.address[key] + " ";
-                    // })
+            data.forEach(element => {
+                // let sq = "";
+                // let rq = "";
+                // Object.keys(element.sender.address).forEach(function (key) {
+                //     sq += element.sender.address[key] + " ";
+                // })
 
-                    // Object.keys(element.receiver.address).forEach(function (key) {
-                    //     rq += element.receiver.address[key] + " ";
-                    // })
-                    // geocodeService.geocode().text(sq).run(function (err, results) {
-                    //     if (err)
-                    //         return;
-                    //     console.log(sq);
-                    //     var s = L.marker(results.latlng);
-                    //     console.log(results.latlng);
-                    //     s.addTo(map); //add pop up with details
-                    // })
-                    // geocodeService.geocode().text(rq).run(function (err, results) {
-                    //     if (err)
-                    //         return;
-                    //     console.log(rq);
+                // Object.keys(element.receiver.address).forEach(function (key) {
+                //     rq += element.receiver.address[key] + " ";
+                // })
+                // geocodeService.geocode().text(sq).run(function (err, results) {
+                //     if (err)
+                //         return;
+                //     console.log(sq);
+                //     var s = L.marker(results.latlng);
+                //     console.log(results.latlng);
+                //     s.addTo(map); //add pop up with details
+                // })
+                // geocodeService.geocode().text(rq).run(function (err, results) {
+                //     if (err)
+                //         return;
+                //     console.log(rq);
 
-                    //     var r = L.marker(results.latlng);
-                    //     r.addTo(map); //add pop up with details
-                    // })
-                    console.log(element.sender);
-                    let cs = element.sender.address.coordinate.split(",");
-                    let s = L.marker([parseFloat(cs[0]), parseFloat(cs[1])]).bindPopup("Sender:" + element.sender.name + " " + element.sender.surname + "," + element.sender.phonenumber + "," + element.sender.email).openPopup();
-                    s.addTo(map);
-
-
-                    let cr = element.receiver.address.coordinate.split(",");
-                    let r = L.marker([parseFloat(cr[0]), parseFloat(cr[1])]).bindPopup("Receiver:" + element.receiver.name + " " + element.receiver.surname + "," + element.receiver.phonenumber + "," + element.receiver.email).openPopup();
-                    r.addTo(map);
+                //     var r = L.marker(results.latlng);
+                //     r.addTo(map); //add pop up with details
+                // })
+                console.log(element.sender);
+                let cs = element.sender.address.coordinate.split(",");
+                let cr = element.receiver.address.coordinate.split(",");
+                let s = L.marker([parseFloat(cs[0]), parseFloat(cs[1])], { draggable: true }).on('drag', function (e) { serverUpdatePreviewLineOnDrag(e, s, r, line) }).on('dragend', senderDragEnd).on('click', (e) => { removeDelivery(e, element.id, data) }).bindPopup("Sender:" + element.sender.name + " " + element.sender.surname + "," + element.sender.phonenumber + "," + element.sender.email).openPopup();
+                s.addTo(map);
 
 
-                    const line = L.polyline([
-                        s.getLatLng(),
-                        r.getLatLng()
-                    ]).addTo(map);
+                let r = L.marker([parseFloat(cr[0]), parseFloat(cr[1])], { draggable: true }).on('drag', function (e) { serverUpdatePreviewLineOnDrag(e, s, r, line) }).on('dragend', receiverDragEnd).on('click', (e) => { removeDelivery(e, element.id, data) }).bindPopup("Receiver:" + element.receiver.name + " " + element.receiver.surname + "," + element.receiver.phonenumber + "," + element.receiver.email).openPopup();
+                r.addTo(map);
 
-                    markers.push(s);
-                    markers.push(r);
-                    markers.push(line);
 
-                });
+                let line = L.polyline([
+                    s.getLatLng(),
+                    r.getLatLng()
+                ]).addTo(map);
+
+                markers.push(s);
+                markers.push(r);
+                markers.push(line);
+
+            });
         }
 
 
@@ -282,22 +376,41 @@ $(document).ready(function () {
             });
 
             //saveSchedule(sender.getLatLng(), receiver.getLatLng(), data);
+            let id = document.getElementById('deliveryid').value;
+            if (id) {
+                //put request
+                $.ajax({
+                    url: '/api/delivery/' + id,
+                    type: 'patch',
+                    data: $('#form').serialize(),
+                    success: function () {
+                        console.log("form patched");
+                        document.getElementById('deliveryid').value = "";
+                        downloadData();
+                    },
+                    error: function () {
+                        console.log("offf")
+                    }
+                });
+
+            }
+            else {
+
+                $.ajax({
+                    url: '/api/delivery',
+                    type: 'post',
+                    data: $('#form').serialize(),
+                    success: function () {
+                        console.log("form posted");
+                        downloadData();
+                    }
+                });
 
 
+                deleteSender();
+                deleteReceiver();
+            }
 
-            $.ajax({
-                url: '/api/delivery',
-                type: 'post',
-                data: $('#form').serialize(),
-                success: function () {
-                    console.log("form posted");
-                    downloadData();
-                }
-            });
-
-
-            deleteSender();
-            deleteReceiver();
             //drawSchedules();
 
 

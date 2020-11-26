@@ -30,6 +30,12 @@ body>div {
     
 }
 
+#deliveryid
+{
+    position: absolute;
+    /* visibility: hidden; */
+}
+
 .container {
     margin: 0 auto;
     background: #f0f0f0;
