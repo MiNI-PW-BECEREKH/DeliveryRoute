@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace Deliveries.Controllers
 {
-    [Route("api/delivery")]
+    [Route("api/delivery/[action]")]
     [ApiController]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class DeliveryController : ControllerBase
@@ -21,6 +21,7 @@ namespace Deliveries.Controllers
         private static readonly object locker = new object();
         private static int GeneratedID = 0;
         [HttpGet]
+        [ActionName("get")]
         public ActionResult<List<Delivery>> GetDeliveries()
         {
 
@@ -45,7 +46,68 @@ namespace Deliveries.Controllers
 
 
 
+        [HttpGet]
+        [ActionName("LoadCompanyDepots")]
+        public ActionResult LoadCompanyDepots()
+        {
+            lock (locker)
+            {
+                DeliveryData.depots.Add(new Depot());
+
+
+                //hardcoded depot for now later we can create a post method for to be created depot form and give depo id/name add to that
+
+                DeliveryData.depots[0].vehicles.Add(new Vehicle { Capacity = 10000, ID = 0, VehicleDepot = DeliveryData.depots[0] });
+                DeliveryData.depots[0].vehicles.Add(new Vehicle { Capacity = 9000, ID = 1, VehicleDepot = DeliveryData.depots[0] });
+                DeliveryData.depots[0].vehicles.Add(new Vehicle { Capacity = 5000, ID = 2, VehicleDepot = DeliveryData.depots[0] });
+                DeliveryData.depots[0].vehicles.Add(new Vehicle { Capacity = 10000, ID = 3, VehicleDepot = DeliveryData.depots[0] });
+                DeliveryData.depots[0].vehicles.Add(new Vehicle { Capacity = 3000, ID = 4, VehicleDepot = DeliveryData.depots[0] });
+                DeliveryData.depots[0].vehicles.Add(new Vehicle { Capacity = 5, ID = 5, VehicleDepot = DeliveryData.depots[0] });
+                DeliveryData.depots[0].vehicles.Add(new Vehicle { Capacity = 5000, ID = 6, VehicleDepot = DeliveryData.depots[0] });
+                DeliveryData.depots[0].vehicles.Add(new Vehicle { Capacity = 9000, ID = 7, VehicleDepot = DeliveryData.depots[0] });
+
+                return Ok(DeliveryData.depots);
+            }
+
+        }
+
+        [HttpGet]
+        [ActionName("ComputeRoutes")]
+        public ActionResult ComputeRoutes()
+        {
+            lock(locker)
+            {
+                foreach (Depot item in DeliveryData.depots)
+                {
+                    foreach (Vehicle t in item.vehicles)
+                    {
+                        t.PickUpPackages();
+                    }
+                }
+                return Ok(DeliveryData.depots[0].vehicles);
+            }
+        }
+
+        [HttpGet]
+        [ActionName("ComputeDeliveryRoutes")]
+        public ActionResult ComputeDeliveryRoutes()
+        {
+            lock(locker)
+            {
+                foreach (Depot item in DeliveryData.depots)
+                {
+                    foreach (Vehicle t in item.vehicles)
+                    {
+                        t.DeliverPackages();
+                    }
+                }
+                return Ok(DeliveryData.depots[0].vehicles);
+            }
+        }
+
+
         [HttpPost]
+        [ActionName("post")]
         public IActionResult Post([FromForm] string senderfname,
                                     [FromForm] string sendersname,
                                     [FromForm] string senderemail,
@@ -122,6 +184,7 @@ namespace Deliveries.Controllers
 
 
         [HttpDelete("{id}")]
+        [ActionName("delete")]
         public ActionResult Delete(int ID)
         {
             lock (locker)
@@ -141,7 +204,8 @@ namespace Deliveries.Controllers
 
 
         [HttpPatch("{id}")]
-        public ActionResult Patch(int ID,[FromForm] int deliveryid,
+        [ActionName("patch")]
+        public ActionResult Patch(int ID, [FromForm] int deliveryid,
                                     [FromForm] string senderfname,
                                     [FromForm] string sendersname,
                                     [FromForm] string senderemail,
@@ -175,7 +239,7 @@ namespace Deliveries.Controllers
                                     [FromForm] string sendercoordinate,
                                     [FromForm] string receivercoordinate)
         {
-            
+
             lock (locker)
             {
                 foreach (var item in DeliveryData.deliveries)

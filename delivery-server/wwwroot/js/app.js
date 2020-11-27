@@ -1,6 +1,5 @@
 $(document).ready(function () {
 
-
     var markers = [];
     var map = L.map('idmap', {
 
@@ -117,8 +116,8 @@ $(document).ready(function () {
                 map.removeLayer(previewLine);
                 showPreviewLine();
             }
-            if(data)
-            updateFormData(e, id, data);
+            if (data)
+                updateFormData(e, id, data);
             //GetDeliveries();
         }
 
@@ -141,8 +140,8 @@ $(document).ready(function () {
                 map.removeLayer(previewLine);
                 showPreviewLine();
             }
-            if(data)
-            updateFormData(e, id, data);
+            if (data)
+                updateFormData(e, id, data);
 
             //GetDeliveries();
         }
@@ -172,8 +171,7 @@ $(document).ready(function () {
         }
 
         window.onload = function () {
-            document.getElementById('form').reset();
-            //GetDeliveries();
+
         }
 
         function showPreviewLine() {
@@ -209,7 +207,7 @@ $(document).ready(function () {
             if (e.originalEvent.ctrlKey) {
 
                 $.ajax({
-                    url: '/api/delivery/' + id,
+                    url: '/api/delivery/delete/' + id,
                     type: 'delete',
                     success: function () {
                         console.log("form deleted");
@@ -291,12 +289,12 @@ $(document).ready(function () {
             document.getElementById('length').value = parcel.length;
             document.getElementById('weight').value = parcel.weight;
             document.getElementById('comments').value = ((parcel.comments == null) ? "" : parcel.comments);
-            document.getElementById('pickupdate').value =  parcel.date.split('T')[0]
+            document.getElementById('pickupdate').value = parcel.date.split('T')[0]
             document.getElementById('pickuptime').value = parcel.time.split('T')[1];
         }
 
         function downloadData() {
-            $.getJSON("/api/delivery", function (data) {
+            $.getJSON("/api/delivery/get/", function (data) {
                 markers.forEach(element => {
                     map.removeLayer(element);
                 });
@@ -378,6 +376,24 @@ $(document).ready(function () {
         }
 
 
+        function displayDepots(data) {
+            data.forEach(element => {
+                //Idk but it can't find this item
+                // var depotIcon = L.icon({
+                //     iconUrl: '/wwwroot/resources/depot.png',
+
+                //     iconSize:     [30, 30], // size of the icon // size of the shadow
+                //     iconAnchor:   [15, 15], // point of the icon which will correspond to marker's location
+                //       // the same for the shadow
+                //     popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+                // });
+
+                c = element.coordinate.split(',');
+                depot = L.marker([parseFloat(c[0]), parseFloat(c[1])]).bindPopup("Company Warehouse").openPopup().addTo(map);
+            })
+        }
+
+
 
         //get form change
         // document.getElementById('form').addEventListener('change', () => {
@@ -391,9 +407,46 @@ $(document).ready(function () {
         //     GetDeliveries();
         // })
 
+        document.getElementById('computeroutes').addEventListener('click', function (e) {
+            let lines = []
+            let dlines = []
+            $.getJSON('api/delivery/ComputeRoutes', function (data) {
+                console.log(data);
+                data.forEach(element => {
+                    console.log(element);
+                    element.routeProp.forEach(e => {
+                        l = e.split(",")
+                        ll = [parseFloat(l[0]), parseFloat(l[1])]
+                        lines.push(ll);
+                    })
+                })
+                console.log(lines);
+                L.polyline(lines, { color: getRandomColor() }).addTo(map);
+            }).then(function () {
+                $.getJSON('api/delivery/ComputeDeliveryRoutes', function (data) {
+                    console.log(data);
+                    data.forEach(element => {
+                        console.log(element);
+                        element.deliveryRouteProp.forEach(e => {
+                            l = e.split(",")
+                            ll = [parseFloat(l[0]), parseFloat(l[1])]
+                            dlines.push(ll);
+                        })
+                    })
+                    console.log(lines);
+                    L.polyline(dlines, { color: getRandomColor() }).addTo(map);
+                })
+            });
+        });
 
-
-
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
 
         document.getElementById('form').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -408,7 +461,7 @@ $(document).ready(function () {
             if (id) {
                 //put request
                 $.ajax({
-                    url: '/api/delivery/' + id,
+                    url: '/api/delivery/patch/' + id,
                     type: 'patch',
                     data: $('#form').serialize(),
                     success: function () {
@@ -425,7 +478,7 @@ $(document).ready(function () {
             else {
 
                 $.ajax({
-                    url: '/api/delivery',
+                    url: '/api/delivery/post',
                     type: 'post',
                     data: $('#form').serialize(),
                     success: function () {
@@ -449,6 +502,19 @@ $(document).ready(function () {
             //return false;
         });
 
+
+        document.getElementById('form').reset();
+        //GetDeliveries();
+        downloadData();
+        $.getJSON('api/delivery/LoadCompanyDepots', function (data) {
+            displayDepots(data);
+
+        });
+
     })();
+
+
+
+
 
 });

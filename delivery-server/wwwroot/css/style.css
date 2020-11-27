@@ -33,7 +33,7 @@ body>div {
 #deliveryid
 {
     position: absolute;
-    /* visibility: hidden; */
+    visibility: hidden;
 }
 
 .container {

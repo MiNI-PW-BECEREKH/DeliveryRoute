@@ -49,6 +49,9 @@ namespace Deliveries.Models
         public Person sender{get;set;}
         public Person receiver{get;set;}
         public Package package{get;set;}
+
+        public bool PickedUp {get;set;} = false;
+        public bool Delivered {get;set;} = false;
     }
 
 
