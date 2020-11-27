@@ -80,7 +80,7 @@ namespace Deliveries.Controllers
                                     [FromForm] string receivercoordinate)
         {
 
-
+            System.Console.WriteLine(parceltype);
 
             Delivery d = new Delivery
             {
@@ -175,6 +175,7 @@ namespace Deliveries.Controllers
                                     [FromForm] string sendercoordinate,
                                     [FromForm] string receivercoordinate)
         {
+            
             lock (locker)
             {
                 foreach (var item in DeliveryData.deliveries)

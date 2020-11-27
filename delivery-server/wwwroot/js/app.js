@@ -104,7 +104,7 @@ $(document).ready(function () {
 
         var geocodeService = L.esri.Geocoding.geocodeService();
 
-        function senderDragEnd(e) {
+        function senderDragEnd(e, id, data) {
             geocodeService.reverse().latlng(e.target._latlng).run(function (error, result) {
                 if (error)
                     return;
@@ -117,7 +117,8 @@ $(document).ready(function () {
                 map.removeLayer(previewLine);
                 showPreviewLine();
             }
-
+            if(data)
+            updateFormData(e, id, data);
             //GetDeliveries();
         }
 
@@ -128,7 +129,7 @@ $(document).ready(function () {
         }
 
 
-        function receiverDragEnd(e) {
+        function receiverDragEnd(e, id, data) {
             geocodeService.reverse().latlng(e.target._latlng).run(function (error, result) {
                 if (error)
                     return;
@@ -140,6 +141,8 @@ $(document).ready(function () {
                 map.removeLayer(previewLine);
                 showPreviewLine();
             }
+            if(data)
+            updateFormData(e, id, data);
 
             //GetDeliveries();
         }
@@ -216,17 +219,21 @@ $(document).ready(function () {
 
             }
             else {
-                data.forEach(element => {
-                    if (element.id === id) {
-                        document.getElementById('deliveryid').value = element.id;
-                        putOnEditReceiver(element.receiver);
-                        putOnEditSender(element.sender);
-                        putOnEditParcel(element.package);
-                        //on button click check if id field exists
-                        //if so send edit request on server
-                    }
-                })
+                updateFormData(e, id, data);
             }
+        }
+
+        function updateFormData(e, id, data) {
+            data.forEach(element => {
+                if (element.id === id) {
+                    document.getElementById('deliveryid').value = element.id;
+                    putOnEditReceiver(element.receiver);
+                    putOnEditSender(element.sender);
+                    putOnEditParcel(element.package);
+                    //on button click check if id field exists
+                    //if so send edit request on server
+                }
+            })
         }
 
         function putOnEditReceiver(receiver) {
@@ -269,6 +276,23 @@ $(document).ready(function () {
 
         function putOnEditParcel(parcel) {
             console.log(parcel);
+            switch (parcel.parceltype) {
+                case "package":
+                    document.getElementById('package').checked = true;
+                    break;
+                case "envelope":
+                    document.getElementById('envelope').checked = true;
+                    break;
+                default:
+                    break;
+            }
+            document.getElementById('width').value = parcel.width;
+            document.getElementById('height').value = parcel.height;
+            document.getElementById('length').value = parcel.length;
+            document.getElementById('weight').value = parcel.weight;
+            document.getElementById('comments').value = ((parcel.comments == null) ? "" : parcel.comments);
+            document.getElementById('pickupdate').value =  parcel.date.split('T')[0]
+            document.getElementById('pickuptime').value = parcel.time.split('T')[1];
         }
 
         function downloadData() {
@@ -329,11 +353,15 @@ $(document).ready(function () {
                 console.log(element.sender);
                 let cs = element.sender.address.coordinate.split(",");
                 let cr = element.receiver.address.coordinate.split(",");
-                let s = L.marker([parseFloat(cs[0]), parseFloat(cs[1])], { draggable: true }).on('drag', function (e) { serverUpdatePreviewLineOnDrag(e, s, r, line) }).on('dragend', senderDragEnd).on('click', (e) => { removeDelivery(e, element.id, data) }).bindPopup("Sender:" + element.sender.name + " " + element.sender.surname + "," + element.sender.phonenumber + "," + element.sender.email).openPopup();
+                let s = L.marker([parseFloat(cs[0]), parseFloat(cs[1])], { draggable: true }).on('drag', function (e) { serverUpdatePreviewLineOnDrag(e, s, r, line) }).on('dragend', function (e) {
+                    senderDragEnd(e, element.id, data);
+                }).on('click', (e) => { removeDelivery(e, element.id, data) }).bindPopup("Sender:" + element.sender.name + " " + element.sender.surname + "," + element.sender.phonenumber + "," + element.sender.email).openPopup();
                 s.addTo(map);
 
 
-                let r = L.marker([parseFloat(cr[0]), parseFloat(cr[1])], { draggable: true }).on('drag', function (e) { serverUpdatePreviewLineOnDrag(e, s, r, line) }).on('dragend', receiverDragEnd).on('click', (e) => { removeDelivery(e, element.id, data) }).bindPopup("Receiver:" + element.receiver.name + " " + element.receiver.surname + "," + element.receiver.phonenumber + "," + element.receiver.email).openPopup();
+                let r = L.marker([parseFloat(cr[0]), parseFloat(cr[1])], { draggable: true }).on('drag', function (e) { serverUpdatePreviewLineOnDrag(e, s, r, line) }).on('dragend', function (e) {
+                    receiverDragEnd(e, element.id, data);
+                }).on('click', (e) => { removeDelivery(e, element.id, data) }).bindPopup("Receiver:" + element.receiver.name + " " + element.receiver.surname + "," + element.receiver.phonenumber + "," + element.receiver.email).openPopup();
                 r.addTo(map);
 
 

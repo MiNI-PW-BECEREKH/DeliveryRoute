@@ -203,12 +203,12 @@
 
                         <div class="information">
                             <div id="option-wrapper-envelope" class="parcel-option">
-                                <input type="radio" id="envelope" name="parceltype">
+                                <input type="radio" id="envelope" value="envelope" name="parceltype">
                                 <label for="envelope">Envelope</label>
                             </div>
 
                             <div id="option-wrapper-package" class="parcel-option">
-                                <input type="radio" id="package" name="parceltype" required>
+                                <input type="radio" id="package" value="package" name="parceltype" required>
                                 <label for="package">Package</label>
                             </div>
 
@@ -233,7 +233,7 @@
                                 <input id="weight" type="number" placeholder="Weight" name="weight"><span>kg</span>
                             </div>
 
-                            <textarea name="comments" class="comments" placeholder="Additional information"></textarea>
+                            <textarea name="comments" id="comments" class="comments" placeholder="Additional information"></textarea>
                         </div>
 
 
@@ -243,9 +243,9 @@
                         <legend>Pick a Date</legend>
 
                         <div class="information">
-                            <input type="date" class="pickup-date" name="pickupdate" required>
+                            <input type="date" id="pickupdate" class="pickup-date" name="pickupdate" required>
 
-                            <input type="time" class="pickup-time" name="pickuptime">
+                            <input type="time" id="pickuptime" class="pickup-time" name="pickuptime">
 
                             <p class="package-info-warning">We will pick up your package at a convenient time and
                                 deliver for you
